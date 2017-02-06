@@ -6,6 +6,9 @@ import device
 
 if __name__ == "__main__":
 
+    # In this example, we implement a smith corrector to control the
+    # device in spite of the sensor delay.
+
     import matplotlib.pyplot as plt
     import math
     
