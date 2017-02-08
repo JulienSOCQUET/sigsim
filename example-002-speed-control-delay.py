@@ -32,8 +32,8 @@ if __name__ == "__main__":
     # Let us the same corrector as example-001. It has been designed
     # from the undelayed position, but here, the error is smith_error.
     Kp = 5
-    Ki = 1
-    cmd_vel = sigsim.Computed(lambda me : Kp*smith_error[0] + Ki*smith_error[1], 0, 0)
+    Kd = 1
+    cmd_vel = sigsim.Computed(lambda me : Kp*smith_error[0] + Kd*smith_error[1], 0, 0)
 
     # this sets the command to the devices (real and simulated).
     dev.cmd_vel = cmd_vel

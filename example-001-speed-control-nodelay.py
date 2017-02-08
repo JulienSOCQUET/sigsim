@@ -29,8 +29,8 @@ if __name__ == "__main__":
 
     # Let us set up a corrector
     Kp = 5
-    Ki = 1
-    cmd_vel = sigsim.Computed(lambda me : Kp*error[0] + Ki*error[1], 0, 0)
+    Kd = 1
+    cmd_vel = sigsim.Computed(lambda me : Kp*error[0] + Kd*error[1], 0, 0)
 
     # this sets the command to the device.
     dev.cmd_vel = cmd_vel
