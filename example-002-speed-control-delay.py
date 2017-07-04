@@ -18,8 +18,8 @@ if __name__ == "__main__":
     # allowed for measuring undelayed poisition. Let us make the model
     # approximative by changing slightly the parameters.
     model = device.CmdVel()
-    model.speed_gain            = dev.speed_gain            * 0.9
-    model.position_sensor_delay = dev.position_sensor_delay * 1.1
+    model.speed_gain = dev.speed_gain * 0.9
+    model.set_delay(dev.position_sensor_delay * 1.1)
 
     # This is the positions we want to reach.
     target = sigsim.Forced(lambda t : float(t > 1.0) - 2*float(t > 5.0) + (1 - max(math.cos(x),-.5))*float(t > 6.28), 0, 0)

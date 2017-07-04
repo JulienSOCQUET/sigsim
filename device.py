@@ -19,9 +19,12 @@ class CmdVel :
         self.position   = sigsim.Computed(lambda me : self.speed_gain * (self.cmd_vel[0] - me[1]), 2, 2)
 
         # position_sensor = position(t-delay)
-        self.position_sensor_delay = 1
-        self.position_sensor = sigsim.Delayed(self.position, self.position_sensor_delay)
+        self.set_delay(1)
 
+    def set_delay(self, delay) :
+        self.position_sensor_delay = delay
+        self.position_sensor = sigsim.Delayed(self.position, self.position_sensor_delay)
+        
     def next(self, dt):
         """
            
