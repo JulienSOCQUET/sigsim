@@ -31,7 +31,7 @@ class Signal:
         """
         self.order   = order
         self.val_size = order+1
-        self.value   = np.zeros(self.val_size, dtype=np.float64)
+        self.clear()
         
     def __setitem__(self, key, item): 
         """
@@ -65,6 +65,9 @@ class Signal:
             new[o] = self.value[o]+dt*self.value[o+1]
         self.value = new
         return self.value
+
+    def clear() :
+        self.value   = np.zeros(self.val_size, dtype=np.float64)
 
 class Forced(Signal):
     """
