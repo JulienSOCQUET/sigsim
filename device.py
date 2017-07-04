@@ -24,6 +24,9 @@ class CmdVel :
     def set_delay(self, delay) :
         self.position_sensor_delay = delay
         self.position_sensor = sigsim.Delayed(self.position, self.position_sensor_delay)
+
+    def clear():
+        self.position.clear()
         
     def next(self, dt):
         """

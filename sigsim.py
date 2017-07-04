@@ -66,7 +66,7 @@ class Signal:
         self.value = new
         return self.value
 
-    def clear() :
+    def clear(self) :
         self.value   = np.zeros(self.val_size, dtype=np.float64)
 
 class Forced(Signal):
@@ -115,6 +115,11 @@ class Delayed(Signal):
         self.delay = delay
         self.buffer = []
         self.signal = signal
+
+    def clear(self):
+        self.buffer = []
+        # I should use super().... but it does not work.
+        self.value  = np.zeros(self.val_size, dtype=np.float64)
 
     def next(self, dt):
         """
