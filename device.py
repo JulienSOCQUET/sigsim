@@ -27,6 +27,7 @@ class CmdVel :
 
     def clear():
         self.position.clear()
+        self.position_sensor.clear()
         
     def next(self, dt):
         """
