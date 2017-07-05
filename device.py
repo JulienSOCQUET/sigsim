@@ -25,7 +25,7 @@ class CmdVel :
         self.position_sensor_delay = delay
         self.position_sensor = sigsim.Delayed(self.position, self.position_sensor_delay)
 
-    def clear():
+    def clear(self):
         self.position.clear()
         self.position_sensor.clear()
         
