@@ -31,7 +31,7 @@ class Signal:
         """
         self.order   = order
         self.val_size = order+1
-        self.clear()
+        self.value   = np.zeros(self.val_size, dtype=np.float64)
         
     def __setitem__(self, key, item): 
         """
@@ -127,6 +127,10 @@ class Delayed(Signal):
            Performs an Euler step with dt
 
         """
+        if self.delay == 0 :
+            self.buffer = []
+            self.value = np.copy(self.signal.value)
+            return self.value
         self.buffer.insert(0,(dt, np.copy(self.signal.value)))
         i = 0;
         t = 0;
