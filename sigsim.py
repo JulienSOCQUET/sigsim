@@ -106,6 +106,79 @@ class Computed(Signal):
         """
         return self.set(self.compute(self.value), self.ith, dt)
 
+class Smoothed(Signal):
+    """
+
+       Interpolates the last N samples with a polynom of degre D. The
+       derivates are computed from the interpolated polynom, on order
+       to avoid noisy derivatives (i.e. Savitzky-Golay algorithm).
+
+       The value is computed by calling the compute method. This method is
+       called with the current self.value signal values (val =
+       compute(self.value)).
+
+    """
+    def __init__(self, compute, order, degree, time_buf_length):
+        Signal.__init__(self, order)
+        self.compute = compute
+        self.tbuffer = np.array([])
+        self.vbuffer = np.array([])
+        self.degree = degree
+        self.time_buf_length = time_buf_length
+
+    def clear(self):
+        self.value   = np.zeros(self.val_size, dtype=np.float64)
+        self.tbuffer = np.array([])
+        self.vbuffer = np.array([])
+
+    def next(self, dt):
+        """
+          Acquire a new sample at last+dt
+
+        """
+        val = self.compute(self.value)
+        self.tbuffer = np.insert(self.tbuffer,0,dt)
+        self.vbuffer = np.insert(self.vbuffer,0,val)
+        buf_length = np.sum(self.tbuffer)
+        if buf_length < self.time_buf_length :
+            self.values    = np.zeros(self.val_size, dtype=np.float64)
+            self.values[0] = val
+        else :
+            buf_length = 0
+            nb_samples = 0
+            while buf_length < self.time_buf_length :
+                buf_length += self.tbuffer[nb_samples]
+                nb_samples += 1
+            if nb_samples < len(self.tbuffer) :
+                self.tbuffer = self.tbuffer[:nb_samples]
+                self.vbuffer = self.vbuffer[:nb_samples]
+            v0 = val
+            tt = 0
+            t = []
+            for dt in self.tbuffer  :
+                t.append(tt)
+                tt -= dt
+            v = np.array(self.vbuffer)-v0
+            T = np.ones(nb_samples)
+            cur = T
+            for d in range(1,self.degree+1) :
+                cur = cur * t
+                T = np.vstack([T,cur])
+            T = T.T
+            p = np.linalg.lstsq(T,v)[0]
+            self.values = np.zeros(self.val_size, dtype=np.float64)
+            bound = min(self.degree, self.order)
+            self.values[0] = val+p[0]
+            fact = 1
+            for o in range(1,bound+1) :
+                fact *= o
+                self.values[o] = p[o]*fact
+
+                
+            
+
+
+        
 class Delayed(Signal):
     """
        This signal correspond to another signal with a time delay.
