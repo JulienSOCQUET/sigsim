@@ -158,6 +158,7 @@ class Smoothed(Signal):
             for dt in self.tbuffer  :
                 t.append(tt)
                 tt -= dt
+            t = np.array(t) 
             v = np.array(self.vbuffer)-v0
             T = np.ones(nb_samples)
             cur = T
@@ -173,6 +174,11 @@ class Smoothed(Signal):
             for o in range(1,bound+1) :
                 fact *= o
                 self.values[o] = p[o]*fact
+
+            #print('##########')
+            #print('t={}'.format(t.tolist()))
+            #print('v={}'.format(v.tolist()))
+            #print('p={}'.format(p.tolist()))
 
                 
             
