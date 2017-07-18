@@ -141,8 +141,8 @@ class Smoothed(Signal):
         self.vbuffer = np.insert(self.vbuffer,0,val)
         buf_length = np.sum(self.tbuffer)
         if buf_length < self.time_buf_length :
-            self.values    = np.zeros(self.val_size, dtype=np.float64)
-            self.values[0] = val
+            self.value    = np.zeros(self.val_size, dtype=np.float64)
+            self.value[0] = val
         else :
             buf_length = 0
             nb_samples = 0
@@ -167,13 +167,13 @@ class Smoothed(Signal):
                 T = np.vstack([T,cur])
             T = T.T
             p = np.linalg.lstsq(T,v)[0]
-            self.values = np.zeros(self.val_size, dtype=np.float64)
+            self.value = np.zeros(self.val_size, dtype=np.float64)
             bound = min(self.degree, self.order)
-            self.values[0] = val+p[0]
+            self.value[0] = val+p[0]
             fact = 1
             for o in range(1,bound+1) :
                 fact *= o
-                self.values[o] = p[o]*fact
+                self.value[o] = p[o]*fact
 
             #print('##########')
             #print('t={}'.format(t.tolist()))

@@ -29,9 +29,9 @@ if __name__ == "__main__":
     for i in range(1,len(t)) :
         dt = t[i] - t[i-1]
         signal.next(dt)
-        Y0.append(signal.values[0])
-        Y1.append(signal.values[1])
-        Y2.append(signal.values[2])
+        Y0.append(signal[0])
+        Y1.append(signal[1])
+        Y2.append(signal[2])
     
 
     plt.figure()
