@@ -118,9 +118,10 @@ class Smoothed(Signal):
        compute(self.value)).
 
     """
-    def __init__(self, compute, order, degree, time_buf_length):
+    def __init__(self, compute, ith, order, degree, time_buf_length):
         Signal.__init__(self, order)
         self.compute = compute
+        self.ith = ith
         self.tbuffer = np.array([])
         self.vbuffer = np.array([])
         self.degree = degree
@@ -137,12 +138,15 @@ class Smoothed(Signal):
 
         """
         val = self.compute(self.value)
+        self.value[self.ith] = val
+        for o in range(self.ith-1,-1,-1):
+            self.value[o] = self.value[o]+dt*self.value[o+1]
+        
         self.tbuffer = np.insert(self.tbuffer,0,dt)
         self.vbuffer = np.insert(self.vbuffer,0,val)
         buf_length = np.sum(self.tbuffer)
         if buf_length < self.time_buf_length :
-            self.value    = np.zeros(self.val_size, dtype=np.float64)
-            self.value[0] = val
+            self.value[self.ith+1:]    = np.zeros(self.order-self.ith, dtype=np.float64)
         else :
             buf_length = 0
             nb_samples = 0
@@ -167,13 +171,13 @@ class Smoothed(Signal):
                 T = np.vstack([T,cur])
             T = T.T
             p = np.linalg.lstsq(T,v)[0]
-            self.value = np.zeros(self.val_size, dtype=np.float64)
-            bound = min(self.degree, self.order)
-            self.value[0] = val+p[0]
+            self.value[self.ith:] = np.zeros(self.order-self.ith+1, dtype=np.float64)
+            bound = min(self.degree, self.order-self.ith)
+            self.value[self.ith] = val+p[0]
             fact = 1
             for o in range(1,bound+1) :
                 fact *= o
-                self.value[o] = p[o]*fact
+                self.value[self.ith+o] = p[o]*fact
 
             #print('##########')
             #print('t={}'.format(t.tolist()))
@@ -237,7 +241,7 @@ class Delayed(Signal):
         
 
 if __name__ == "__main__":
-
+    '''
     import matplotlib.pyplot as plt
     import math
     
@@ -257,12 +261,12 @@ if __name__ == "__main__":
     a[1] = .3 # a' at start
 
     dt = 0.01
-    t = 0
+    t  = 0
     Y0 = [g[0]]
     Y1 = [.25*g[1]]
     Y2 = [.25*h[1]]
     Y3 = [a[0]]
-    X = np.arange(0,20,dt)
+    X  = np.arange(0,20,dt)
     for x in X[1:]:
         f.next(dt)
         g.next(dt)
@@ -280,8 +284,39 @@ if __name__ == "__main__":
     plt.plot(X, Y3, '-', label = "a" )
     plt.legend()
     plt.show()
+    '''
 
+    import matplotlib.pyplot as plt
+    from math import cos, pi
     
+    target          = Forced(lambda t : float(t > 2.0), 0, 0)
+    target_formated = Smoothed(lambda me : target[0], 1, 2, 4, 2)
+    dt              = 0.01
+    X               = np.arange(0, 30, dt)
+    If              = [target_formated[0]]
+    f               = [target_formated[1]]
+    df              = [target_formated[2]]
+    Command         = [target[0]]
+    
+    for x in X[1:]:
+        target.next(dt)
+        target_formated.next(dt)
+        If.append(target_formated[0])
+        f.append(target_formated[1])
+        df.append(target_formated[2])
+        Command.append(target[0])
+        
+    plt.figure()
+    plt.ylim(-1,2)
+    plt.plot(X, Command, '--', label = "Command")
+    plt.plot(X, If,      '--', label = "If" ) 
+    plt.plot(X, f,       '-',  label = "f'")
+    plt.plot(X, df,      '.',  label = "df" )
+    plt.legend()
+    plt.show()
+           
+
+
 
         
 

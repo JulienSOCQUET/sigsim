@@ -17,14 +17,14 @@ if __name__ == "__main__":
     i = 0
 
     t = np.array(sorted([random.uniform(0,bound) for i in range(size)]))
-    # t = np.linspace(0,bound,size) # for regular sampling
+    #t = np.linspace(0,bound,size) # for regular sampling
     y = np.cos(t) + noise_ampl*(2*np.random.rand(size)-1)
 
     Y0 = []
     Y1 = []
     Y2 = []
 
-    signal = sigsim.Smoothed(lambda me : y[i], 2, deg, window_duration)
+    signal = sigsim.Smoothed(lambda me : y[i], 0, 2, deg, window_duration)
     
     for i in range(1,len(t)) :
         dt = t[i] - t[i-1]
