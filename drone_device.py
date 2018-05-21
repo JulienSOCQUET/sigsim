@@ -30,8 +30,8 @@ class Regulator :
         self.Ti                    = None
         self.Td                    = None
         self.input_signal          = None
-        #self.formated_input_signal = sigsim.Smoothed(lambda me : self.input_signal[0], 1, 2, 4, 0.4)
-        self.formated_input_signal = sigsim.Computed(lambda me : self.input_signal[0], 1, 2)
+        self.formated_input_signal = sigsim.Smoothed(lambda me : self.input_signal[0], 1, 2, 4, 2)
+        #self.formated_input_signal = sigsim.Computed(lambda me : self.input_signal[0], 1, 2)
         self.output_signal         = sigsim.Computed(lambda me : self.K*(self.formated_input_signal[1]+self.formated_input_signal[0]/self.Ti+self.formated_input_signal[2]*self.Td), 0, 0)
 
     def clear(self):
@@ -44,8 +44,9 @@ class Regulator :
 
 class SmithPredictorCmdVel :
 
-    def __init__(self, model_order):
+    def __init__(self, model_order, max_cmd):
         self.input_signal                  = None
+        self.max_cmd                       = max_cmd
         self.drone_simulation              = Drone(model_order)
         self.regulator                     = Regulator()
         self.drone_simulation.input_signal = self.regulator.output_signal
@@ -67,6 +68,10 @@ class SmithPredictorCmdVel :
         """
         self.smith_error.next(dt)
         self.regulator.next(dt)
+        if self.regulator.output_signal[0] > self.max_cmd:
+            self.regulator.output_signal[0] = self.max_cmd
+        elif self.regulator.output_signal[0] < -self.max_cmd:
+            self.regulator.output_signal[0] = -self.max_cmd
         self.drone_simulation.next(dt)
 
 
@@ -89,9 +94,9 @@ if __name__ == "__main__":
         tau         = 0.22
         K0          = 3.0
         T0          = 0.13
-        K           = 0.2
+        K           = 0.1
         Ti          = 20
-        Td          = 14
+        Td          = 2
         dt          = 0.01
         model_order = 2
 
@@ -99,29 +104,30 @@ if __name__ == "__main__":
         tau         = 0.20
         K0          = 1.0
         T0          = 0.16
-        K           = 6
-        Ti          = 20
-        Td          = 0.2
+        K           = 1
+        Ti          = 15
+        Td          = 0
         dt          = 0.01
         model_order = 1
 
     elif axis == 'angZ':
-        tau         = None
-        K0          = None
-        T0          = None
-        K           = None
-        Ti          = None
-        Td          = None
-        dt          = None
+        tau         = 0.20
+        K0          = 0.35
+        T0          = 2.55
+        K           = 0.6
+        Ti          = 10
+        Td          = 0.4
+        dt          = 0.01
         model_order = 1
 
     ### Define the blocks ###
 
     noise_ampl = 0.05
+    max_cmd    = 1
     noise      = noise_ampl*(2*random()-1)
     target     = sigsim.Forced(lambda t : float(t > 2.0)+noise, 0, 0)
     drone      = Drone(model_order)
-    predictor  = SmithPredictorCmdVel(model_order)
+    predictor  = SmithPredictorCmdVel(model_order, max_cmd)
 
     drone.K0                      = 0.9*K0
     drone.T0                      = 1.1*T0
@@ -134,14 +140,14 @@ if __name__ == "__main__":
     predictor.regulator.Td        = Td
     
     drone.input_signal     = predictor.regulator.output_signal
-    drone.set_delay(0.22)
-    predictor.set_delay(0.22)
+    drone.set_delay(tau)
+    predictor.set_delay(tau)
     erreur                 = sigsim.Computed(lambda me : target[0]-drone.output_signal_delayed[0], 0, 0)
     predictor.input_signal = erreur
 
     ### Calculate the signals ###
     
-    X                   = np.arange(0,10,dt)
+    X                   = np.arange(0,20,dt)
     TARGET              = [target[0]]
     POSITION_SIMULATION = [predictor.drone_simulation.output_signal[0]]
     POSITION            = [drone.output_signal_delayed[0]]
