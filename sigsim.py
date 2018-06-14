@@ -236,7 +236,37 @@ class Delayed(Signal):
         self.value = val_prev + c*(val-val_prev)
         return self.value
             
+class SignalSmoothed(Signal):
+    """
+       The signal is smoothed.
+       The ith derivative value of the signal at each time is computed by
+       calling the compute method. This method is called with the
+       current self.value signal values (val = compute(self.value)).
+
+    """
+    def __init__(self, compute, window):
+        Signal.__init__(self, 0)
+        self.compute = compute
+        self.window  = window
+        self.vbuffer = np.array([], dtype=np.float64)
+
+    def next(self, dt):
+        """
+           Performs a smoothing of the signal.
+        """
         
+        self.vbuffer     = np.insert(self.vbuffer,0,self.compute(self.value))
+        
+        if len(self.vbuffer) > self.window:
+            self.vbuffer = np.delete(self.vbuffer, -1)
+            self.value   = np.array([np.sum(self.vbuffer) / self.window])
+            
+        else: 
+            self.value   = np.array([np.sum(self.vbuffer) / len(self.vbuffer)])
+
+    def clear(self):
+        self.vbuffer = np.zeros(self.window, dtype=np.float64)
+        self.value   = np.zeros(1, dtype=np.float64)
             
         
 
